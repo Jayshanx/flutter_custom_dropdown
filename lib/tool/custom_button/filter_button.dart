@@ -9,6 +9,7 @@ class FilterButton extends StatelessWidget {
 
   ///确定
   const FilterButton({Key? key, required this.resetOnTap, required this.fixOnTap}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -16,22 +17,21 @@ class FilterButton extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Container(
-              child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: resetOnTap,
-                  child: Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 41.5),
-                      decoration: BoxDecoration(
-                        color: Color(0XFFFFFFFF),
-                        borderRadius: const BorderRadius.all(Radius.circular(2.0)),
-                        border: Border.all(width: .5, color: Theme.of(context).primaryColor),
-                      ),
-                      child: Text(
-                        '重置',
-                        style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 18),
-                      )))),
+          GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: resetOnTap,
+              child: Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 41.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0XFFFFFFFF),
+                    borderRadius: const BorderRadius.all(Radius.circular(2.0)),
+                    border: Border.all(width: .5, color: Theme.of(context).primaryColor),
+                  ),
+                  child: Text(
+                    '重置',
+                    style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 18),
+                  ))),
           const SizedBox(
             width: 12.0,
           ),
@@ -46,7 +46,7 @@ class FilterButton extends StatelessWidget {
                       color: Theme.of(context).primaryColor,
                       borderRadius: const BorderRadius.all(Radius.circular(2.0)),
                     ),
-                    child: Text(
+                    child: const Text(
                       '确定',
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ))),

@@ -1,18 +1,14 @@
-import 'dart:ui';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
-import 'drapdown_common.dart';
+import 'dropdown_common.dart';
 
-typedef void DropdownMenuHeadTapCallback(int index);
+typedef DropdownMenuHeadTapCallback = void Function(int index);
 
 ///头部样式
-typedef String GetItemLabel(dynamic data, [String valueKey]);
+typedef GetItemLabel = String Function(dynamic data, [String valueKey]);
 
 ///头部图标样式
-typedef Widget GetCustomizeImage(bool selected, bool subjectiveSelected);
+typedef GetCustomizeImage = Widget Function(bool selected, bool subjectiveSelected);
 
 ///文本显示title提取
 String defaultGetItemLabel(dynamic data, [String? valueKey]) {
@@ -34,7 +30,7 @@ String defaultGetItemLabel(dynamic data, [String? valueKey]) {
   }
   if (data is List) {
     ///多选情况赋值第一个
-    if (data.length >= 1) {
+    if (data.isNotEmpty) {
       try {
         String _title = data[0]["title"];
         if (_title.isNotEmpty) {
@@ -90,7 +86,7 @@ class DropdownHeader extends DropdownWidget {
     this.selectColor,
     this.unselectedColor,
     this.specialModules = const [],
-    this.height: 46.0,
+    this.height = 46.0,
     this.isSideline = true,
     this.dropDownSelectImage,
     this.dropDownImage,
@@ -102,7 +98,7 @@ class DropdownHeader extends DropdownWidget {
 
   @override
   DropdownState<DropdownWidget> createState() {
-    return new _DropdownHeaderState();
+    return _DropdownHeaderState();
   }
 }
 
@@ -123,20 +119,20 @@ class _DropdownHeaderState extends DropdownState<DropdownHeader> {
         _selected = true;
 
         ///处理特殊显示问题,有些样例只需要显示颜色不需要更改头部title
-        if (widget.specialModules.length > 0) {
+        if (widget.specialModules.isNotEmpty) {
           if (widget.specialModules.contains(index)) {
             _showTitle = _title;
           }
         }
       }
     }
-    return new GestureDetector(
+    return GestureDetector(
       behavior: HitTestBehavior.opaque,
       child: Padding(
           padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
           child: DecoratedBox(
-              decoration: new BoxDecoration(border: widget.isSideline ? Border(left: Divider.createBorderSide(context)) : null),
-              child: new Container(
+              decoration: BoxDecoration(border: widget.isSideline ? Border(left: Divider.createBorderSide(context)) : null),
+              child: Container(
                 margin: const EdgeInsets.only(left: 1.0, right: 1.0),
                 width: (_screenWidth / widget.titles.length) - 20,
                 child: Row(
@@ -149,19 +145,17 @@ class _DropdownHeaderState extends DropdownState<DropdownHeader> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Flexible(
-                              child: Container(
-                            child: Text(
-                              getItemLabel(_showTitle),
-                              style: TextStyle(
-                                  color: _selected
-                                      ? primaryColor
-                                      : selected
-                                          ? primaryColor
-                                          : unselectedColor,
-                                  fontSize: 15.0),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
+                              child: Text(
+                            getItemLabel(_showTitle),
+                            style: TextStyle(
+                                color: _selected
+                                    ? primaryColor
+                                    : selected
+                                        ? primaryColor
+                                        : unselectedColor,
+                                fontSize: 15.0),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           )),
                           Container(
                             width: 0.0,
@@ -216,16 +210,14 @@ class _DropdownHeaderState extends DropdownState<DropdownHeader> {
                 : unselectedColor,
       );
     }
-    return Image.asset(
-      selected ? widget.dropDownSelectImage! : widget.dropDownImage!,
-      width: 18.0,
-      height: 18.0,
-      color: _selected
-          ? primaryColor
-          : selected
-              ? primaryColor
-              : unselectedColor,
-    );
+    return Image.asset(selected ? widget.dropDownSelectImage! : widget.dropDownImage!,
+        width: 18.0,
+        height: 18.0,
+        color: _selected
+            ? primaryColor
+            : selected
+                ? primaryColor
+                : unselectedColor);
   }
 
   int? _activeIndex;
@@ -249,21 +241,19 @@ class _DropdownHeaderState extends DropdownState<DropdownHeader> {
     }
 
     list = list.map((Widget widget) {
-      return new Expanded(
-        child: widget,
-      );
+      return Expanded(child: widget);
     }).toList();
 
-    final Decoration decoration = new BoxDecoration(
-      border: new Border(
+    final Decoration decoration = BoxDecoration(
+      border: Border(
         bottom: Divider.createBorderSide(context),
       ),
     );
 
-    return new DecoratedBox(
+    return DecoratedBox(
       decoration: decoration,
-      child: new SizedBox(
-          child: new Row(
+      child: SizedBox(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: list,
           ),
@@ -274,34 +264,36 @@ class _DropdownHeaderState extends DropdownState<DropdownHeader> {
   @override
   void initState() {
     _titles = widget.titles;
-    _titlesCopy = []..addAll(widget.titles);
+    _titlesCopy = [...widget.titles];
     super.initState();
   }
 
   @override
   void onEvent(DropdownEvent event) {
     switch (event) {
-      case DropdownEvent.SELECT:
+      case DropdownEvent.select:
         {
           setState(() {
             _activeIndex = null;
             String label = widget.getItemLabel(controller!.data);
             try {
               _titles[controller!.menuIndex] = label == "" ? _titles[controller!.menuIndex] : label;
-            } catch (err) {}
+            } catch (err) {
+              debugPrint(err.toString());
+            }
           });
         }
         break;
-      case DropdownEvent.HIDE:
+      case DropdownEvent.hide:
         {
-          print('选中内容HIDE = ${controller!.data}');
+          debugPrint('选中内容HIDE = ${controller!.data}');
           if (_activeIndex == null) return;
           setState(() {
             _activeIndex = null;
           });
         }
         break;
-      case DropdownEvent.ACTIVE:
+      case DropdownEvent.active:
         {
           if (_activeIndex == controller!.menuIndex) return;
           setState(() {

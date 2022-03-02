@@ -1,15 +1,15 @@
 import 'package:flutter/cupertino.dart';
 
-import 'drapdown_common.dart';
+import 'dropdown_common.dart';
 
-typedef Widget BlankMenuItemBuilder<T>(BuildContext context, List<T> data, DropdownMenuController? controller);
+typedef BlankMenuItemBuilder<T> = Widget Function(BuildContext context, List<T> data, DropdownMenuController? controller);
 
 ///提供空白页面,内容自定义使用
 class DropdownMenuCustomize<T> extends DropdownWidget {
   final List<T> data;
   final BlankMenuItemBuilder itemBuilder;
 
-  const DropdownMenuCustomize({Key? key, required this.data, required this.itemBuilder});
+  const DropdownMenuCustomize({Key? key, required this.data, required this.itemBuilder}) : super(key: key);
 
   @override
   DropdownState<DropdownWidget> createState() {
@@ -38,11 +38,11 @@ class _MenuListState<T> extends DropdownState<DropdownMenuCustomize<T>> {
   void onEvent(DropdownEvent event) {
     // TODO: implement onEvent
     switch (event) {
-      case DropdownEvent.SELECT:
-      case DropdownEvent.HIDE:
+      case DropdownEvent.select:
+      case DropdownEvent.hide:
         {}
         break;
-      case DropdownEvent.ACTIVE:
+      case DropdownEvent.active:
         {}
         break;
     }

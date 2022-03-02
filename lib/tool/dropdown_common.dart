@@ -2,18 +2,18 @@ import 'package:flutter/widgets.dart';
 
 enum DropdownEvent {
   // 关闭
-  HIDE,
+  hide,
 
   // 打开
-  ACTIVE,
+  active,
 
   // 传输数据
-  SELECT
+  select
 }
 
 class DropdownMenuController extends ChangeNotifier {
   ///下拉状态
-  DropdownEvent event = DropdownEvent.HIDE;
+  DropdownEvent event = DropdownEvent.hide;
 
   ///当前操作下标
   int menuIndex = -1;
@@ -22,36 +22,36 @@ class DropdownMenuController extends ChangeNotifier {
   dynamic data;
 
   void hide() {
-    event = DropdownEvent.HIDE;
+    event = DropdownEvent.hide;
     notifyListeners();
   }
 
   void show(int index) {
-    event = DropdownEvent.ACTIVE;
+    event = DropdownEvent.active;
     menuIndex = index;
     notifyListeners();
   }
 
   ///自定义赋值
   void select(dynamic _data, [int? index]) {
-    event = DropdownEvent.SELECT;
-    this.data = _data;
+    event = DropdownEvent.select;
+    data = _data;
     if (index != null) {
-      this.menuIndex = index;
+      menuIndex = index;
     }
     notifyListeners();
   }
 
   ///单纯的赋值,不做操作,适用于非弹出页面,复杂模块赋值
   void assignment(dynamic _data, [int? index]) {
-    this.data = _data;
+    data = _data;
     if (index != null) {
-      this.menuIndex = index;
+      menuIndex = index;
     }
   }
 }
 
-typedef DropdownMenuOnSelected({int menuIndex, dynamic data});
+typedef DropdownMenuOnSelected = Function({int menuIndex, dynamic data});
 
 class DefaultDropdownMenuController extends StatefulWidget {
   const DefaultDropdownMenuController({
@@ -70,7 +70,7 @@ class DefaultDropdownMenuController extends StatefulWidget {
   }
 
   @override
-  _DefaultDropdownMenuControllerState createState() => new _DefaultDropdownMenuControllerState();
+  _DefaultDropdownMenuControllerState createState() => _DefaultDropdownMenuControllerState();
 }
 
 class _DefaultDropdownMenuControllerState extends State<DefaultDropdownMenuController> with SingleTickerProviderStateMixin {
@@ -79,13 +79,13 @@ class _DefaultDropdownMenuControllerState extends State<DefaultDropdownMenuContr
   @override
   void initState() {
     super.initState();
-    _controller = new DropdownMenuController();
+    _controller = DropdownMenuController();
     _controller.addListener(_onController);
   }
 
   void _onController() {
     switch (_controller.event) {
-      case DropdownEvent.SELECT:
+      case DropdownEvent.select:
         {
           //通知widget
           if (widget.onSelected == null) return;
@@ -95,9 +95,9 @@ class _DefaultDropdownMenuControllerState extends State<DefaultDropdownMenuContr
           );
         }
         break;
-      case DropdownEvent.ACTIVE:
+      case DropdownEvent.active:
         break;
-      case DropdownEvent.HIDE:
+      case DropdownEvent.hide:
         break;
     }
   }

@@ -24,11 +24,11 @@ class DropdownSliverChildBuilderDelegate extends SliverPersistentHeaderDelegate 
 
   // TODO: implement maxExtent
   @override
-  double get maxExtent => this.maxDefinitionExtent ?? 46.0;
+  double get maxExtent => maxDefinitionExtent ?? 46.0;
 
   // TODO: implement minExtent
   @override
-  double get minExtent => this.minDefinitionExtent ?? 46.0;
+  double get minExtent => minDefinitionExtent ?? 46.0;
 
   @override
   bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) {

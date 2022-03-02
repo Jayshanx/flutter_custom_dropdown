@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:ui' as ui show Image, ImageFilter;
+import 'dart:ui' as ui show ImageFilter;
 
 import 'package:flutter/material.dart';
 
-import 'drapdown_common.dart';
+import 'dropdown_common.dart';
 
 enum DropdownMenuShowHideSwitchStyle {
   /// the showing menu will direct hide without animation
@@ -45,7 +45,7 @@ class DropdownMenu extends DropdownWidget {
 
   final double? maxMenuHeight;
 
-  DropdownMenu({
+  const DropdownMenu({
     Key? key,
     required this.menus,
     DropdownMenuController? controller,
@@ -56,14 +56,12 @@ class DropdownMenu extends DropdownWidget {
     this.packUpHeight,
     this.maxMenuHeight,
     this.hideCurve = Curves.fastOutSlowIn,
-    this.switchStyle: DropdownMenuShowHideSwitchStyle.animationShowUntilAnimationHideComplete,
+    this.switchStyle = DropdownMenuShowHideSwitchStyle.animationShowUntilAnimationHideComplete,
     this.showCurve = Curves.fastOutSlowIn,
   }) : super(key: key, controller: controller);
 
   @override
-  DropdownState<DropdownMenu> createState() {
-    return new _DropdownMenuState(this.packUpHeight);
-  }
+  DropdownState<DropdownMenu> createState() => _DropdownMenuState();
 }
 
 class _DropdownAnimation {
@@ -72,16 +70,15 @@ class _DropdownAnimation {
   late RectTween position;
   double? packUpHeight;
 
-  _DropdownAnimation(TickerProvider provider, double? packUpHeight) {
-    animationController = new AnimationController(vsync: provider);
-    this.packUpHeight = packUpHeight;
+  _DropdownAnimation(TickerProvider provider, this.packUpHeight) {
+    animationController = AnimationController(vsync: provider);
   }
 
   set height(double value) {
     ///加300防止动画收回时值不够
-    position = new RectTween(
-      begin: new Rect.fromLTRB(0.0, -value - (packUpHeight ?? 300), 0.0, 0.0),
-      end: new Rect.fromLTRB(0.0, 0.0, 0.0, 0.0),
+    position = RectTween(
+      begin: Rect.fromLTRB(0.0, -value - (packUpHeight ?? 300), 0.0, 0.0),
+      end: const Rect.fromLTRB(0.0, 0.0, 0.0, 0.0),
     );
     rect = position.animate(animationController);
   }
@@ -102,7 +99,7 @@ class _DropdownAnimation {
 class SizeClipper extends CustomClipper<Rect> {
   @override
   Rect getClip(Size size) {
-    return new Rect.fromLTWH(0.0, 0.0, size.width, size.height);
+    return Rect.fromLTWH(0.0, 0.0, size.width, size.height);
   }
 
   @override
@@ -115,26 +112,26 @@ class _DropdownMenuState extends DropdownState<DropdownMenu> with TickerProvider
   late List<_DropdownAnimation> _dropdownAnimations;
   late bool _show;
   late List<int> _showing;
-  final double? packUpHeight;
+
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
-  _DropdownMenuState(this.packUpHeight);
+  _DropdownMenuState();
 
   @override
   void initState() {
     _showing = [];
     _dropdownAnimations = [];
     for (int i = 0, c = widget.menus.length; i < c; ++i) {
-      _dropdownAnimations.add(new _DropdownAnimation(this, widget.packUpHeight));
+      _dropdownAnimations.add(_DropdownAnimation(this, widget.packUpHeight));
     }
 
     _updateHeights();
 
     _show = false;
 
-    _fadeController = new AnimationController(vsync: this);
-    _fadeAnimation = new Tween(
+    _fadeController = AnimationController(vsync: this);
+    _fadeAnimation = Tween(
       begin: 0.0,
       end: 1.0,
     ).animate(_fadeController);
@@ -167,20 +164,17 @@ class _DropdownMenuState extends DropdownState<DropdownMenu> with TickerProvider
   Widget createMenu(BuildContext context, DropdownMenuBuilder menu, int i) {
     DropdownMenuBuilder builder = menu;
 
-    return new ClipRect(
-      clipper: new SizeClipper(),
-      child: new SizedBox(height: _ensureHeight(builder.height), child: _showing.contains(i) ? builder.builder(context) : null),
+    return ClipRect(
+      clipper: SizeClipper(),
+      child: SizedBox(height: _ensureHeight(builder.height), child: _showing.contains(i) ? builder.builder(context) : null),
     );
   }
 
   Widget _buildBackground(BuildContext context) {
-    Widget container = new Container(
-//      color: Color.fromARGB(60, 0, 0, 0),
-      color: Colors.black12,
-    );
+    Widget container = Container(color: Colors.black12);
 
-    container = new BackdropFilter(
-        filter: new ui.ImageFilter.blur(
+    container = BackdropFilter(
+        filter: ui.ImageFilter.blur(
           sigmaY: widget.blur ?? 0.0,
           sigmaX: widget.blur ?? 0.0,
         ),
@@ -193,35 +187,38 @@ class _DropdownMenuState extends DropdownState<DropdownMenu> with TickerProvider
   Widget build(BuildContext context) {
     List<Widget> list = [];
 
-    print("build ${new DateTime.now()}");
     Widget _onShowH = FadeTransition(
       opacity: _fadeAnimation,
-      child: new GestureDetector(onTap: onHide, child: _buildBackground(context)),
+      child: GestureDetector(onTap: onHide, child: _buildBackground(context)),
     );
     if (_show) {
       list.add(_onShowH);
     }
     for (int i = 0, c = widget.menus.length; i < c; ++i) {
-      list.add(new RelativePositionedTransition(
+      list.add(
+        RelativePositionedTransition(
           rect: _dropdownAnimations[i].rect,
-          size: new Size(0.0, 0.0),
-          child: new Align(
-              alignment: Alignment.topCenter,
-              child: new Container(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                child: createMenu(context, widget.menus[i], i),
-              ))));
+          size: const Size(0.0, 0.0),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: createMenu(context, widget.menus[i], i),
+            ),
+          ),
+        ),
+      );
     }
 
     //WidgetsBinding;
     //context.findRenderObject();
-    return new Stack(
+    return Stack(
       fit: StackFit.expand,
       children: list,
     );
   }
 
-  TickerFuture onHide({bool dispatch: true}) {
+  TickerFuture onHide({bool dispatch = true}) {
     if (_activeIndex != null) {
       int index = _activeIndex!;
       _activeIndex = null;
@@ -244,7 +241,7 @@ class _DropdownMenuState extends DropdownState<DropdownMenu> with TickerProvider
       return future;
     }
 
-    return new TickerFuture.complete();
+    return TickerFuture.complete();
   }
 
   TickerFuture _hide(int index) {
@@ -278,10 +275,8 @@ class _DropdownMenuState extends DropdownState<DropdownMenu> with TickerProvider
               _show = true;
             });
 
-            return new Future.value(null);
+            return Future.value(null);
           }
-
-          break;
         case DropdownMenuShowHideSwitchStyle.animationHideAnimationShow:
           {
             _hide(_activeIndex!);
@@ -336,13 +331,13 @@ class _DropdownMenuState extends DropdownState<DropdownMenu> with TickerProvider
   @override
   void onEvent(DropdownEvent event) {
     switch (event) {
-      case DropdownEvent.SELECT:
-      case DropdownEvent.HIDE:
+      case DropdownEvent.select:
+      case DropdownEvent.hide:
         {
           onHide(dispatch: false);
         }
         break;
-      case DropdownEvent.ACTIVE:
+      case DropdownEvent.active:
         {
           onShow(controller!.menuIndex);
         }

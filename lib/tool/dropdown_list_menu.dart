@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'custom_button/filter_button.dart';
-import 'drapdown_common.dart';
+import 'dropdown_common.dart';
 
-typedef Widget MenuItemBuilder<T>(BuildContext context, T data, bool selected, String? valueKey);
+typedef MenuItemBuilder<T> = Widget Function(BuildContext context, T data, bool selected, String? valueKey);
 
 ///自定义按钮,重置按钮,确定按钮,选中数据,自定义处置通知按钮
-typedef Widget MenuButtonBuilder(BuildContext context, Object data, {VoidCallback resetOnTap, VoidCallback fixOnTap, VoidCallback noticeOnTap});
+typedef MenuButtonBuilder = Widget Function(BuildContext context, Object data,
+    {VoidCallback resetOnTap, VoidCallback fixOnTap, VoidCallback noticeOnTap});
 
 class CustomInputClass {
   final String startInput;
@@ -57,6 +58,7 @@ class DropdownListMenu<T> extends DropdownWidget {
 
   ///定义输入文本格式字段key
   const DropdownListMenu({
+    Key? key,
     required this.keyWords,
     required this.data,
     this.isOperatingButton = true,
@@ -67,11 +69,11 @@ class DropdownListMenu<T> extends DropdownWidget {
     this.isMultiple = false,
     this.selectedIndex,
     required this.itemBuilder,
-  });
+  }) : super(key: key);
 
   @override
   DropdownState<DropdownWidget> createState() {
-    return new _MenuListState<T>();
+    return _MenuListState<T>();
   }
 }
 
@@ -114,7 +116,7 @@ class _MenuListState<T> extends DropdownState<DropdownListMenu<T>> {
   Widget buildItem(BuildContext context, int index) {
     final List<T> list = widget.data;
     final T data = list[index];
-    return new GestureDetector(
+    return GestureDetector(
       behavior: HitTestBehavior.opaque,
       child: Container(
         color: const Color(0XFFFFFFFF),
@@ -156,10 +158,10 @@ class _MenuListState<T> extends DropdownState<DropdownListMenu<T>> {
       }
       minPrince = "";
       maxPrince = "";
-      if (_subclassIndex.length == 0) _subclassIndex.add(_selectedIndex);
+      if (_subclassIndex.isEmpty) _subclassIndex.add(_selectedIndex);
     });
     if (widget.isMultiple && !widget.isOperatingButton) {
-      _superclassIndex = []..addAll(_subclassIndex);
+      _superclassIndex = [..._subclassIndex];
       assert(controller != null);
       controller!.select(_superclassIndex);
     }
@@ -187,47 +189,45 @@ class _MenuListState<T> extends DropdownState<DropdownListMenu<T>> {
                             margin: const EdgeInsets.symmetric(horizontal: 12.0),
                             child: Column(
                               children: <Widget>[
-                                Container(
-                                  child: TextField(
-                                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                    keyboardType: widget.customInput?.keyboardType == TextInputType.number
-                                        ? const TextInputType.numberWithOptions(decimal: true)
-                                        : widget.customInput?.keyboardType ?? TextInputType.text,
-                                    autofocus: false,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(
-                                      border: InputBorder.none,
-                                      hintStyle: const TextStyle(color: Color(0XFFC0C4CC), fontSize: 18.0),
-                                      hintText: "${widget.customInput?.startHintText ?? ''}",
-                                    ),
-                                    //使用controller保存输入框的值
-                                    controller: TextEditingController.fromValue(TextEditingValue(
-                                        text: minPrince.toString(),
-                                        selection: new TextSelection.fromPosition(
-                                            TextPosition(affinity: TextAffinity.downstream, offset: minPrince.toString().length)))),
+                                TextField(
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                  keyboardType: widget.customInput?.keyboardType == TextInputType.number
+                                      ? const TextInputType.numberWithOptions(decimal: true)
+                                      : widget.customInput?.keyboardType ?? TextInputType.text,
+                                  autofocus: false,
+                                  textAlign: TextAlign.center,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintStyle: const TextStyle(color: Color(0XFFC0C4CC), fontSize: 18.0),
+                                    hintText: widget.customInput?.startHintText ?? '',
+                                  ),
+                                  //使用controller保存输入框的值
+                                  controller: TextEditingController.fromValue(TextEditingValue(
+                                      text: minPrince.toString(),
+                                      selection: TextSelection.fromPosition(
+                                          TextPosition(affinity: TextAffinity.downstream, offset: minPrince.toString().length)))),
 
-                                    onChanged: (text) {
-                                      setState(() {
-                                        minPrince = text;
+                                  onChanged: (text) {
+                                    setState(() {
+                                      minPrince = text;
 //                                      princes['minPrince'] = minPrince;
-                                        princes[widget.customInput?.startInput ?? 'value1'] = minPrince;
-                                        if (minPrince == '' && maxPrince == '') {
-                                          _subclassIndex.add(_selectedIndex);
-                                        } else {
-                                          _subclassIndex.clear();
-                                          _subclassIndex.remove(_selectedIndex);
-                                        }
-                                      });
-                                    },
-                                    onSubmitted: (text) {
+                                      princes[widget.customInput?.startInput ?? 'value1'] = minPrince;
+                                      if (minPrince == '' && maxPrince == '') {
+                                        _subclassIndex.add(_selectedIndex);
+                                      } else {
+                                        _subclassIndex.clear();
+                                        _subclassIndex.remove(_selectedIndex);
+                                      }
+                                    });
+                                  },
+                                  onSubmitted: (text) {
 //                                    setState(() {
 //                                      minPrince = text;
 //
 ////                                      princes['minPrince'] = minPrince;
 //                                      _subclassIndex.remove(_selectedIndex);
 //                                    });
-                                    },
-                                  ),
+                                  },
                                 ),
                                 const Divider(
                                   height: .5,
@@ -248,47 +248,45 @@ class _MenuListState<T> extends DropdownState<DropdownListMenu<T>> {
                             margin: const EdgeInsets.symmetric(horizontal: 12.0),
                             child: Column(
                               children: <Widget>[
-                                Container(
-                                  child: TextField(
-                                    inputFormatters: [
-                                      // ignore: deprecated_member_use
-                                      FilteringTextInputFormatter.digitsOnly
-                                    ],
-                                    keyboardType: widget.customInput?.keyboardType == TextInputType.number
-                                        ? const TextInputType.numberWithOptions(decimal: true)
-                                        : widget.customInput?.keyboardType ?? TextInputType.text,
-                                    autofocus: false,
-                                    textAlign: TextAlign.center,
-                                    decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: "${widget.customInput?.endHintText ?? ''}",
-                                        hintStyle: const TextStyle(color: Color(0XFFC0C4CC), fontSize: 18.0)),
-                                    //使用controller保存输入框的值
-                                    controller: TextEditingController.fromValue(TextEditingValue(
-                                        text: maxPrince.toString(),
-                                        selection: new TextSelection.fromPosition(
-                                            TextPosition(affinity: TextAffinity.downstream, offset: maxPrince.toString().length)))),
-                                    onChanged: (text) {
-                                      setState(() {
-                                        maxPrince = text;
-                                        princes[widget.customInput?.endInput ?? 'value2'] = maxPrince;
-                                        if (minPrince == '' && maxPrince == '') {
-                                          print("${minPrince == ''}||minPrince$minPrince,maxPrince$maxPrince ===${maxPrince == ''}");
-                                          _subclassIndex.add(_selectedIndex);
-                                        } else {
-                                          _subclassIndex.clear();
-                                          _subclassIndex.remove(_selectedIndex);
-                                        }
-                                      });
-                                    },
-                                    onSubmitted: (text) {
+                                TextField(
+                                  inputFormatters: [
+                                    // ignore: deprecated_member_use
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
+                                  keyboardType: widget.customInput?.keyboardType == TextInputType.number
+                                      ? const TextInputType.numberWithOptions(decimal: true)
+                                      : widget.customInput?.keyboardType ?? TextInputType.text,
+                                  autofocus: false,
+                                  textAlign: TextAlign.center,
+                                  decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: widget.customInput?.endHintText ?? '',
+                                      hintStyle: const TextStyle(color: Color(0XFFC0C4CC), fontSize: 18.0)),
+                                  //使用controller保存输入框的值
+                                  controller: TextEditingController.fromValue(TextEditingValue(
+                                      text: maxPrince.toString(),
+                                      selection: TextSelection.fromPosition(
+                                          TextPosition(affinity: TextAffinity.downstream, offset: maxPrince.toString().length)))),
+                                  onChanged: (text) {
+                                    setState(() {
+                                      maxPrince = text;
+                                      princes[widget.customInput?.endInput ?? 'value2'] = maxPrince;
+                                      if (minPrince == '' && maxPrince == '') {
+                                        debugPrint("${minPrince == ''}||minPrince$minPrince,maxPrince$maxPrince ===${maxPrince == ''}");
+                                        _subclassIndex.add(_selectedIndex);
+                                      } else {
+                                        _subclassIndex.clear();
+                                        _subclassIndex.remove(_selectedIndex);
+                                      }
+                                    });
+                                  },
+                                  onSubmitted: (text) {
 //                                    setState(() {
 //                                      maxPrince = text;
 //                                      princes[widget.customInput.endInput??'value2'] = maxPrince;
 //                                      _subclassIndex.remove(_selectedIndex);
 //                                    });
-                                    },
-                                  ),
+                                  },
                                 ),
                                 const Divider(
                                   height: .5,
@@ -328,7 +326,7 @@ class _MenuListState<T> extends DropdownState<DropdownListMenu<T>> {
         );
       }
       Map _item = {widget.customInput?.startInput ?? 'value1': minPrince, widget.customInput?.endInput ?? 'value2': maxPrince};
-      List _list = []..addAll(_subclassIndex);
+      List _list = [..._subclassIndex];
       _list.add(_item);
       return widget.buttonBuilder!(context, _list, fixOnTap: () {
         _getFixOnTap();
@@ -352,7 +350,7 @@ class _MenuListState<T> extends DropdownState<DropdownListMenu<T>> {
 //                         _superclassIndex = json.decode(json.encode(_subclassIndex));///此方式影响性能
       princes[widget.customInput?.startInput ?? 'value1'] = minPrince;
       princes[widget.customInput?.endInput ?? 'value2'] = maxPrince;
-      _superclassIndex = []..addAll(_subclassIndex);
+      _superclassIndex = [..._subclassIndex];
       _superclassIndex.add(princes);
     });
     assert(controller != null);
@@ -373,14 +371,14 @@ class _MenuListState<T> extends DropdownState<DropdownListMenu<T>> {
   @override
   void onEvent(DropdownEvent event) {
     switch (event) {
-      case DropdownEvent.SELECT:
-      case DropdownEvent.HIDE:
+      case DropdownEvent.select:
+      case DropdownEvent.hide:
         setState(() {
           if (_subclassIndex != _superclassIndex) {
             minPrince = princes[widget.customInput?.startInput ?? 'value1'];
             maxPrince = princes[widget.customInput?.endInput ?? 'value2'];
-            if (_superclassIndex.length == 0) _superclassIndex.add(_selectedIndex);
-            _subclassIndex = []..addAll(_superclassIndex);
+            if (_superclassIndex.isEmpty) _superclassIndex.add(_selectedIndex);
+            _subclassIndex = [..._superclassIndex];
           }
 //          if(isRegular){
 //            if(_subclassIndex != _superclassIndex){
@@ -391,7 +389,7 @@ class _MenuListState<T> extends DropdownState<DropdownListMenu<T>> {
         });
         {}
         break;
-      case DropdownEvent.ACTIVE:
+      case DropdownEvent.active:
         {}
         break;
     }
